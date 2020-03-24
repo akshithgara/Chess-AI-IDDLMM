@@ -1,6 +1,7 @@
 // AI
 // This is where you build your AI
-
+// Author: Akshith Gara
+// Chess AI Implementation
 #include "ai.hpp"
 
 // <<-- Creer-Merge: includes -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.

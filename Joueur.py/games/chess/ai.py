@@ -1,6 +1,5 @@
 # This is where you build your AI for the Chess game.
-# Author: Akshith Gara
-# Chess AI Implementation
+
 from joueur.base_ai import BaseAI
 import random
 # <<-- Creer-Merge: imports -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
@@ -64,7 +63,6 @@ class AI(BaseAI):
         """
         # <<-- Creer-Merge: makeMove -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
         # Put your game logic here for makeMove
-        print('Hello!')
         return ""
         # <<-- /Creer-Merge: makeMove -->>
 
