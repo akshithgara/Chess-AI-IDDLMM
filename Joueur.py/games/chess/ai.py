@@ -1,9 +1,47 @@
 # This is where you build your AI for the Chess game.
+# Author: Akshith Gara
+# Implementation of Chess AI
 
 from joueur.base_ai import BaseAI
-import random
+
 # <<-- Creer-Merge: imports -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
-# you can add additional import(s) here
+import random
+
+def extract_fen(fen, us):
+    """
+    Pretty formats an FEN string to a human readable string.
+    For more information on FEN (Forsyth-Edwards Notation) strings see:
+    https://wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+    """
+
+    # split the FEN string up to help parse it
+    split = fen.split(' ')
+    first = split[0]  # the first part is always the board locations
+
+    side_to_move = split[1]  # always the second part for side to move
+    us_or_them = 'us' if side_to_move == us[0] else 'them'
+
+    fullmove = split[5]  # always the sixth part for the full move
+
+    lines = first.split('/')
+    strings = ['Move: {}\nSide to move: {} ({})\n   +-----------------+'.format(
+        fullmove, side_to_move, us_or_them
+    )]
+
+    for i, line in enumerate(lines):
+        strings.append('\n {} |'.format(8 - i))
+        for char in line:
+            try:
+                char_as_number = int(char)
+                # it is a number, so that many blank lines
+                strings.append(' .' * char_as_number)
+            except:
+                strings.append(' ' + char)
+
+        strings.append(' |')
+    strings.append('\n   +-----------------+\n     a b c d e f g h\n')
+
+    return ''.join(strings)
 # <<-- /Creer-Merge: imports -->>
 
 class AI(BaseAI):
@@ -28,7 +66,7 @@ class AI(BaseAI):
             str: The name of your Player.
         """
         # <<-- Creer-Merge: get-name -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
-        return "Chess Python Player" # REPLACE THIS WITH YOUR TEAM NAME
+        return "TWD" # REPLACE THIS WITH YOUR TEAM NAME
         # <<-- /Creer-Merge: get-name -->>
 
     def start(self) -> None:
@@ -63,7 +101,8 @@ class AI(BaseAI):
         """
         # <<-- Creer-Merge: makeMove -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
         # Put your game logic here for makeMove
-        return ""
+        print(extract_fen(self.game.fen, self.player.color))
+        return "b2b4"
         # <<-- /Creer-Merge: makeMove -->>
 
     # <<-- Creer-Merge: functions -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
