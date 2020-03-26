@@ -38,6 +38,7 @@ z_indicies = {
     'k': 12
 }
 
+
 class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
     """ A state of a chess game
     board -- a 120 char representation of the board
@@ -130,16 +131,6 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
                 board = put(board, j + S, '.')
         # Rotate the returned State so it's ready for the next player
         return State(board, 0, wc, bc, ep, kp, depth, q.upper()).rotate()
-
-    def value(self):
-        score = 0
-        # evaluate material advantage
-        for k, p in enumerate(self.board):
-            # k - State index
-            # p - piece code
-            if p.isupper(): score += piece_values[p]
-            if p.islower(): score -= piece_values[p.upper()]
-        return score
 
     def is_check(self):
         # returns if the state represented by the current State is check
