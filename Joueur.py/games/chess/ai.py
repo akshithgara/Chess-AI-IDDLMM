@@ -205,16 +205,16 @@ class Position(namedtuple('Position', 'board score wc bc ep kp depth captured'))
 
     def is_check(self):
         # returns if the state represented by the current position is check
-        op_board = self.nullmove()
-        print("opponent", op_board)
-        for move in op_board.gen_moves():
+        # op_board = self.nullmove()
+        # print("opponent", op_board)
+        for move in self.gen_moves():
             i, j = move
-            p, q = op_board.board[i], op_board.board[j]
+            p, q = self.board[i], self.board[j]
             # opponent can take our king
             initial = square_san(i).file + str(square_san(i).rank)
             final = square_san(j).file + str(square_san(j).rank)
-            print(p,q)
-            print(initial,final)
+            # print(p,q)
+            # print(initial,final)
             if q == 'k':
                 return True
         return False
@@ -339,7 +339,7 @@ class AI(BaseAI):
         # <<-- Creer-Merge: makeMove -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
         # Put your game logic here for makeMove
         # print(self.board)
-        print(pretty_fen(self.game.fen, self.player.color))
+        # print(pretty_fen(self.game.fen, self.player.color))
         # print(self.player.color)
         validMoveList = []
         for move in self.board.gen_moves():
@@ -350,13 +350,16 @@ class AI(BaseAI):
             initial = square_san(piece_index).file + str(square_san(piece_index).rank)
             final = square_san(move_index).file + str(square_san(move_index).rank)
             totalMove = initial + final
+            # print("expanding", totalMove)
             next_board = self.board.move(move)
-            print("next", next_board)
-            if next_board.is_check(): continue
-            validMoveList.append(totalMove)
+            # print("next", next_board)
+            if not next_board.is_check():
+                validMoveList.append(totalMove)
 
+
+        # print(validMoveList)
         randomMove = random.choice(validMoveList)
-        print(randomMove)
+        # print(randomMove)
         # print(validMoveList)
         return randomMove
         # <<-- /Creer-Merge: makeMove -->>
