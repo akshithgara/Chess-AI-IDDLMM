@@ -7,7 +7,7 @@ from math import inf
 from timeit import default_timer as timer
 from collections import namedtuple, defaultdict
 from itertools import count
-from random import getrandbits
+import random
 from operator import xor
 import re
 
@@ -206,10 +206,15 @@ class Position(namedtuple('Position', 'board score wc bc ep kp depth captured'))
     def is_check(self):
         # returns if the state represented by the current position is check
         op_board = self.nullmove()
+        print("opponent", op_board)
         for move in op_board.gen_moves():
             i, j = move
             p, q = op_board.board[i], op_board.board[j]
             # opponent can take our king
+            initial = square_san(i).file + str(square_san(i).rank)
+            final = square_san(j).file + str(square_san(j).rank)
+            print(p,q)
+            print(initial,final)
             if q == 'k':
                 return True
         return False
@@ -305,7 +310,6 @@ class AI(BaseAI):
         """
         # <<-- Creer-Merge: start -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
         self.board = fen_to_position(self.game.fen)
-        self.transposition_table = dict()
         # <<-- /Creer-Merge: start -->>
 
     def game_updated(self) -> None:
@@ -334,14 +338,27 @@ class AI(BaseAI):
         """
         # <<-- Creer-Merge: makeMove -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
         # Put your game logic here for makeMove
-        print(self.board)
+        # print(self.board)
         print(pretty_fen(self.game.fen, self.player.color))
+        # print(self.player.color)
+        validMoveList = []
         for move in self.board.gen_moves():
             (piece_index, move_index) = (move)
-            print(square_san(piece_index), square_san(move_index))
+            if self.player.color == "black":
+                piece_index = 119 - piece_index
+                move_index = 119 - move_index
+            initial = square_san(piece_index).file + str(square_san(piece_index).rank)
+            final = square_san(move_index).file + str(square_san(move_index).rank)
+            totalMove = initial + final
+            next_board = self.board.move(move)
+            print("next", next_board)
+            if next_board.is_check(): continue
+            validMoveList.append(totalMove)
 
-
-        return ""
+        randomMove = random.choice(validMoveList)
+        print(randomMove)
+        # print(validMoveList)
+        return randomMove
         # <<-- /Creer-Merge: makeMove -->>
 
     # <<-- Creer-Merge: functions -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
