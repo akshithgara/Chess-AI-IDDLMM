@@ -3,31 +3,12 @@
 from joueur.base_ai import BaseAI
 
 # <<-- Creer-Merge: imports -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
-from math import inf
-from timeit import default_timer as timer
-from collections import namedtuple, defaultdict
-from itertools import count
+from collections import namedtuple
 import random
-from operator import xor
-import re
+from games.chess.state import State
 
 
 A1, H1, A8, H8 = 91, 98, 21, 28
-initial = (
-    '         \n'  # 0 -  9
-    '         \n'  # 10 - 19
-    ' rnbqkbnr\n'  # 20 - 29
-    ' pppppppp\n'  # 30 - 39
-    ' ........\n'  # 40 - 49
-    ' ........\n'  # 50 - 59
-    ' ........\n'  # 60 - 69
-    ' ........\n'  # 70 - 79
-    ' PPPPPPPP\n'  # 80 - 89
-    ' RNBQKBNR\n'  # 90 - 99
-    '         \n'  # 100 -109
-    '         \n'  # 110 -119
-)
-
 N, E, S, W = -10, 1, 10, -1
 
 # valid moves for each piece
@@ -63,6 +44,7 @@ z_indicies = {
     'q': 11,
     'k': 12
 }
+
 
 def pretty_fen(fen, us):
     """
@@ -100,124 +82,7 @@ def pretty_fen(fen, us):
 
     return ''.join(strings)
 
-class Position(namedtuple('Position', 'board score wc bc ep kp depth captured')):
-    """ A state of a chess game
-    board -- a 120 char representation of the board
-    score -- the board evaluation
-    wc -- the castling rights, [west/queen side, east/king side]
-    bc -- the opponent castling rights, [west/king side, east/queen side]
-    ep - the en passant square
-    kp - the king passant square
-    depth - the node depth of the position
-    captured - the piece that was captured as the result of the last move
-    """
 
-    def gen_moves(self):
-        for i, p in enumerate(self.board):
-            # i - initial position index
-            # p - piece code
-
-            # if the piece doesn't belong to us, skip it
-            if not p.isupper(): continue
-            for d in directions[p]:
-                # d - potential action for a given piece
-                for j in count(i + d, d):
-                    # j - final position index
-                    # q - occupying piece code
-                    q = self.board[j]
-                    # Stay inside the board, and off friendly pieces
-                    if q.isspace() or q.isupper(): break
-                    # Pawn move, double move and capture
-                    if p == 'P' and d in (N, N + N) and q != '.': break
-                    if p == 'P' and d == N + N and (i < A1 + N or self.board[i + N] != '.'): break
-                    if p == 'P' and d in (N + W, N + E) and q == '.' and j not in (self.ep, self.kp): break
-                    # Move it
-                    yield (i, j)
-                    # Stop non-sliders from sliding and sliding after captures
-                    if p in 'PNK' or q.islower(): break
-                    # Castling by sliding rook next to king
-                    if i == A1 and self.board[j + E] == 'K' and self.wc[0]: yield (j + E, j + W)
-                    if i == H1 and self.board[j + W] == 'K' and self.wc[1]: yield (j + W, j + E)
-
-    def rotate(self):
-        # Rotates the board, preserving enpassant
-        # Allows logic to be reused, as only one board configuration must be considered
-        return Position(
-            self.board[::-1].swapcase(), -self.score, self.bc, self.wc,
-            119 - self.ep if self.ep else 0,
-            119 - self.kp if self.kp else 0, self.depth, None)
-
-    def nullmove(self):
-        # Like rotate, but clears ep and kp
-        return Position(
-            self.board[::-1].swapcase(), -self.score,
-            self.bc, self.wc, 0, 0, self.depth + 1, None)
-
-    def move(self, move):
-        # i - original position index
-        # j - final position index
-        i, j = move
-        # p - piece code of moving piece
-        # q - piece code at final square
-        p, q = self.board[i], self.board[j]
-        # put replaces string character at i with character p
-        put = lambda board, i, p: board[:i] + p + board[i + 1:]
-        # copy variables and reset eq and kp and increment depth
-        board = self.board
-        wc, bc, ep, kp, depth = self.wc, self.bc, 0, 0, self.depth + 1
-        # score = self.score + self.value(move)
-        # perform the move
-        board = put(board, j, board[i])
-        board = put(board, i, '.')
-        # update castling rights, if we move our rook or capture the opponent's rook
-        if i == A1: wc = (False, wc[1])
-        if i == H1: wc = (wc[0], False)
-        if j == A8: bc = (bc[0], False)
-        if j == H8: bc = (False, bc[1])
-        # Castling Logic
-        if p == 'K':
-            wc = (False, False)
-            if abs(j - i) == 2:
-                kp = (i + j) // 2
-                board = put(board, A1 if j < i else H1, '.')
-                board = put(board, kp, 'R')
-        # Pawn promotion, double move, and en passant capture
-        if p == 'P':
-            if A8 <= j <= H8:
-                # Promote the pawn to Queen
-                board = put(board, j, 'Q')
-            if j - i == 2 * N:
-                ep = i + N
-            if j - i in (N + W, N + E) and q == '.':
-                board = put(board, j + S, '.')
-        # Rotate the returned position so it's ready for the next player
-        return Position(board, 0, wc, bc, ep, kp, depth, q.upper()).rotate()
-
-    def value(self):
-        score = 0
-        # evaluate material advantage
-        for k, p in enumerate(self.board):
-            # k - position index
-            # p - piece code
-            if p.isupper(): score += piece_values[p]
-            if p.islower(): score -= piece_values[p.upper()]
-        return score
-
-    def is_check(self):
-        # returns if the state represented by the current position is check
-        # op_board = self.nullmove()
-        # print("opponent", op_board)
-        for move in self.gen_moves():
-            i, j = move
-            p, q = self.board[i], self.board[j]
-            # opponent can take our king
-            initial = square_san(i).file + str(square_san(i).rank)
-            final = square_san(j).file + str(square_san(j).rank)
-            # print(p,q)
-            # print(initial,final)
-            if q == 'k':
-                return True
-        return False
 
 ####################################
 # square formatting helper functions
@@ -275,9 +140,9 @@ def fen_to_position(fen_string):
 
     # Position(board score wc bc ep kp depth)
     if player == 'w':
-        return Position(board_out, 0, wc, bc, enpassant, 0, 0, None)
+        return State(board_out, 0, wc, bc, enpassant, 0, 0, None)
     else:
-        return Position(board_out, 0, wc, bc, enpassant, 0, 0, None).rotate()
+        return State(board_out, 0, wc, bc, enpassant, 0, 0, None).rotate()
 # <<-- /Creer-Merge: imports -->>
 
 class AI(BaseAI):
@@ -366,7 +231,7 @@ class AI(BaseAI):
 
     # <<-- Creer-Merge: functions -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
     def update_board(self):
-        # update current board state by converting current FEN to Position object
+        # update current board state by converting current FEN to State object
         self.board = fen_to_position(self.game.fen)
 
 
