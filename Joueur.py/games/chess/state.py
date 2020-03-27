@@ -24,7 +24,7 @@ dir = {
 
 class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
 
-
+    # Generates all possible moves for a given state
     def generate_moves(self):
         for i, p in enumerate(self.board):
             # i - initial State index
@@ -52,14 +52,14 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
                     if i == A1 and self.board[j + E] == 'K' and self.wc[0]: yield (j + E, j + W)
                     if i == H1 and self.board[j + W] == 'K' and self.wc[1]: yield (j + W, j + E)
 
+    # This function rotates the board by preserving enpassant, so that it's ready for the next player.
     def rotate(self):
-        # Rotates the board, preserving enpassant
-        # Allows logic to be reused, as only one board configuration must be considered
         return State(
             self.board[::-1].swapcase(), -self.score, self.bc, self.wc,
             119 - self.ep if self.ep else 0,
             119 - self.kp if self.kp else 0, self.depth, None)
 
+    # This function computes a move and returns a State object that represents the state after that move
     def move(self, move):
         # i - original State index
         # j - final State index

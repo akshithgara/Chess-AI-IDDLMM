@@ -92,9 +92,14 @@ class AI(BaseAI):
             # Add move to the validMoveList only if the move doesn't put king in a check
             if not next_board.check_check():
                 validMoveList.append(totalMove)
-
+            
         # Chooses a random move from the validMoveList
         randomMove = random.choice(validMoveList)
+        print("Valid moves for the piece: \n")
+        for i in validMoveList:
+            if i[0:2] == randomMove[0:2]:
+                print(i)
+        print("\n")
         return randomMove
         # <<-- /Creer-Merge: makeMove -->>
 
