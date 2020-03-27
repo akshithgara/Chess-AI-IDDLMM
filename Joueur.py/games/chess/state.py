@@ -1,12 +1,19 @@
 from collections import namedtuple
 from itertools import count
 
+""" 
+A state class that interprets the given fen in the form of a board
+and it's functions generate moves that are valid for a given state.
+"""
+
+
+
 # 4 Corners of the co-ordinates of the board representation
 A1, H1, A8, H8 = 91, 98, 21, 28
 N, E, S, W = -10, 1, 10, -1
 
-# valid moves for each piece
-directions = {
+# Directions of valid moves for each piece
+dir = {
     'P': (N, N + N, N + W, N + E),
     'N': (N + N + E, E + N + E, E + S + E, S + S + E, S + S + W, W + S + W, W + N + W, N + N + W),
     'B': (N + E, S + E, S + W, N + W),
@@ -15,51 +22,17 @@ directions = {
     'K': (N, E, S, W, N + E, S + E, S + W, N + W)
 }
 
-piece_values = {
-    'P': 1,
-    'N': 3,
-    'B': 3,
-    'R': 5,
-    'Q': 9,
-    'K': 200
-}
-
-z_indicies = {
-    'P': 1,
-    'N': 2,
-    'B': 3,
-    'R': 4,
-    'Q': 5,
-    'K': 6,
-    'p': 7,
-    'n': 8,
-    'b': 9,
-    'r': 10,
-    'q': 11,
-    'k': 12
-}
-
-
 class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
-    """ A state of a chess game
-    board -- a 120 char representation of the board
-    score -- the board evaluation
-    wc -- the castling rights, [west/queen side, east/king side]
-    bc -- the opponent castling rights, [west/king side, east/queen side]
-    ep - the en passant square
-    kp - the king passant square
-    depth - the node depth of the State
-    captured - the piece that was captured as the result of the last move
-    """
 
-    def gen_moves(self):
+
+    def generate_moves(self):
         for i, p in enumerate(self.board):
             # i - initial State index
             # p - piece code
 
             # if the piece doesn't belong to us, skip it
             if not p.isupper(): continue
-            for d in directions[p]:
+            for d in dir[p]:
                 # d - potential action for a given piece
                 for j in count(i + d, d):
                     # j - final State index
@@ -86,12 +59,6 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
             self.board[::-1].swapcase(), -self.score, self.bc, self.wc,
             119 - self.ep if self.ep else 0,
             119 - self.kp if self.kp else 0, self.depth, None)
-
-    def nullmove(self):
-        # Like rotate, but clears ep and kp
-        return State(
-            self.board[::-1].swapcase(), -self.score,
-            self.bc, self.wc, 0, 0, self.depth + 1, None)
 
     def move(self, move):
         # i - original State index
@@ -133,9 +100,9 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
         # Rotate the returned State so it's ready for the next player
         return State(board, 0, wc, bc, ep, kp, depth, q.upper()).rotate()
 
+    # This function checks if the any of the valid moves for given board state ends in a check 
     def check_check(self):
-        # returns if the state represented by the current State is check
-        for move in self.gen_moves():
+        for move in self.generate_moves():
             i, j = move
             p, q = self.board[i], self.board[j]
             # opponent can take our king

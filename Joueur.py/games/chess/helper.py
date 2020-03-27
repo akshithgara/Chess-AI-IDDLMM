@@ -1,5 +1,10 @@
 from collections import namedtuple
 
+"""
+Functions in this file are mainly to convert the given 
+board representation indices to SAN 
+"""
+
 # 4 Corners of the co-ordinates of the board representation
 A1, H1, A8, H8 = 91, 98, 21, 28
 
