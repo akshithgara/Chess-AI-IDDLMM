@@ -1,6 +1,7 @@
 from collections import namedtuple
 from itertools import count
 
+# 4 Corners of the co-ordinates of the board representation
 A1, H1, A8, H8 = 91, 98, 21, 28
 N, E, S, W = -10, 1, 10, -1
 
@@ -132,7 +133,7 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
         # Rotate the returned State so it's ready for the next player
         return State(board, 0, wc, bc, ep, kp, depth, q.upper()).rotate()
 
-    def is_check(self):
+    def check_check(self):
         # returns if the state represented by the current State is check
         for move in self.gen_moves():
             i, j = move
