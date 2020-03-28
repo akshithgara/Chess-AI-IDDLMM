@@ -96,7 +96,7 @@ class AI(BaseAI):
         # Chooses a random move from the validMoveList
         randomMove = random.choice(validMoveList)
         print('Game State: \n')
-        print(self.board, '\n')
+        print(self.board.board, '\n')
         print("Valid moves for the piece: \n")
         for i in validMoveList:
             if i[0:2] == randomMove[0:2]:
