@@ -1,5 +1,6 @@
 # This is where you build your AI for the Chess game.
-
+# Author: Akshith Gara
+# Chess AI Implementation Assignment 1
 from joueur.base_ai import BaseAI
 
 # <<-- Creer-Merge: imports -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.

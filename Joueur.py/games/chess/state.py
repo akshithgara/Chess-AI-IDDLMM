@@ -28,17 +28,16 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
     def generate_moves(self):
         for i, p in enumerate(self.board):
             # i - initial State index
-            # p - piece code
+            # p - piece 
 
             # if the piece doesn't belong to us, skip it
             if not p.isupper(): continue
             for d in dir[p]:
-                # d - potential action for a given piece
+                # d - Potential move direction for a piece p
                 for j in count(i + d, d):
                     # j - final State index
                     # q - occupying piece code
                     q = self.board[j]
-                    # Stay inside the board, and off friendly pieces
                     if q.isspace() or q.isupper(): break
                     # Pawn move, double move and capture
                     if p == 'P' and d in (N, N + N) and q != '.': break
@@ -61,7 +60,7 @@ class State(namedtuple('State', 'board score wc bc ep kp depth captured')):
 
     # This function computes a move and returns a State object that represents the state after that move
     def move(self, move):
-        # i - original State index
+        # i - initial State index
         # j - final State index
         i, j = move
         # p - piece code of moving piece
