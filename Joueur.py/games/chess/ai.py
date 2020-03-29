@@ -95,14 +95,15 @@ class AI(BaseAI):
             
         # Chooses a random move from the validMoveList
         randomMove = random.choice(validMoveList)
-        print('Game State:')
-        print(self.board.board)
-        print(' abcdefgh \n')
+        print('Game State: \n')
+        currentState = print_from_fen(self.game.fen, self.player.color)
+        print(currentState)
         print("Valid moves for the piece: \n")
+        validMoves = set()
         for i in validMoveList:
             if i[0:2] == randomMove[0:2]:
-                print(i)
-        print("\n")
+                validMoves.add(i)
+        print(validMoves, "\n")
         return randomMove
         # <<-- /Creer-Merge: makeMove -->>
 
