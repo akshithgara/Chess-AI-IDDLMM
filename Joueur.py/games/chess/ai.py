@@ -97,7 +97,7 @@ class AI(BaseAI):
         randomMove = random.choice(validMoveList)
         print('Game State:')
         print(self.board.board)
-        print('abcdefgh \n')
+        print(' abcdefgh \n')
         print("Valid moves for the piece: \n")
         for i in validMoveList:
             if i[0:2] == randomMove[0:2]:
